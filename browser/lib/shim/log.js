@@ -2,7 +2,7 @@
 
 // TODO Replace by a proper lightweight logging module, suited for the browser
 
-var enabled = false
+var enabled = true
 function Logger(id) {
   if (id == null) {
     id = ''

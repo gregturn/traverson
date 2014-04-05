@@ -1,9 +1,9 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.traverson=e():"undefined"!=typeof global?global.traverson=e():"undefined"!=typeof self&&(self.traverson=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.traverson=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 'use strict';
 
 // TODO Replace by a proper lightweight logging module, suited for the browser
 
-var enabled = false
+var enabled = true
 function Logger(id) {
   if (id == null) {
     id = ''
@@ -49,7 +49,7 @@ minilog.enable = function() {
 
 module.exports = minilog
 
-},{}],2:[function(require,module,exports){
+},{}],2:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -61,10 +61,10 @@ module.exports = {
   }
 }
 
-},{}],3:[function(require,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 'use strict';
 
-var superagent = require('../third-party/superagent')
+var superagent = _dereq_('../third-party/superagent')
 
 function Request() {
   this.options = {}
@@ -154,7 +154,7 @@ function mapResponse(response) {
 
 module.exports = new Request()
 
-},{"../third-party/superagent":5}],4:[function(require,module,exports){
+},{"../third-party/superagent":5}],4:[function(_dereq_,module,exports){
 'use strict';
 
 /*
@@ -198,7 +198,7 @@ var _s = {
 
 module.exports = _s
 
-},{}],5:[function(require,module,exports){
+},{}],5:[function(_dereq_,module,exports){
 ;(function(){
 
 /**
@@ -401,7 +401,7 @@ require.relative = function(parent) {
 
   return localRequire;
 };
-require.register("component-indexof/index.js", function(exports, require, module){
+require.register("component-indexof/index.js", function(exports, _dereq_, module){
 
 var indexOf = [].indexOf;
 
@@ -413,13 +413,13 @@ module.exports = function(arr, obj){
   return -1;
 };
 });
-require.register("component-emitter/index.js", function(exports, require, module){
+require.register("component-emitter/index.js", function(exports, _dereq_, module){
 
 /**
  * Module dependencies.
  */
 
-var index = require('indexof');
+var index = _dereq_('indexof');
 
 /**
  * Expose `Emitter`.
@@ -578,7 +578,7 @@ Emitter.prototype.hasListeners = function(event){
 };
 
 });
-require.register("RedVentures-reduce/index.js", function(exports, require, module){
+require.register("RedVentures-reduce/index.js", function(exports, _dereq_, module){
 
 /**
  * Reduce `arr` with `fn`.
@@ -604,14 +604,14 @@ module.exports = function(arr, fn, initial){
   return curr;
 };
 });
-require.register("superagent/lib/client.js", function(exports, require, module){
+require.register("superagent/lib/client.js", function(exports, _dereq_, module){
 
 /**
  * Module dependencies.
  */
 
-var Emitter = require('emitter');
-var reduce = require('reduce');
+var Emitter = _dereq_('emitter');
+var reduce = _dereq_('reduce');
 
 /**
  * Root reference for iframes.
@@ -1583,17 +1583,17 @@ if (typeof exports == "object") {
   this["superagent"] = require("superagent");
 }})();
 
-},{"emitter":15,"indexof":15,"reduce":15,"superagent":15}],6:[function(require,module,exports){
+},{"emitter":14,"indexof":14,"reduce":14,"superagent":14}],6:[function(_dereq_,module,exports){
 'use strict';
 
-var minilog = require('minilog')
-var standardRequest = require('request')
-var util = require('util')
+var minilog = _dereq_('minilog')
+var standardRequest = _dereq_('request')
+var util = _dereq_('util')
 
-var FinalAction = require('./final_action')
-var JsonWalker = require('./json_walker')
-var JsonHalWalker = require('./json_hal_walker')
-var mediaTypes = require('./media_types')
+var FinalAction = _dereq_('./final_action')
+var JsonWalker = _dereq_('./json_walker')
+var JsonHalWalker = _dereq_('./json_hal_walker')
+var mediaTypes = _dereq_('./media_types')
 
 var log = minilog('traverson')
 
@@ -1601,6 +1601,7 @@ function Builder(mediaType, startUri) {
   this.walker = this.createWalker(mediaType)
   this.walker.startUri = startUri
   this.walker.request = this.request = standardRequest
+  this.walker.ignoreOptions = false
   this.finalAction = new FinalAction(this.walker)
 }
 
@@ -1627,6 +1628,11 @@ Builder.prototype.follow = function() {
 }
 
 Builder.prototype.walk = Builder.prototype.follow
+
+Builder.prototype.ignoreOptions = function() {
+  this.walker.ignoreOptions = true
+  return this
+}
 
 Builder.prototype.withTemplateParameters = function(parameters) {
   this.walker.templateParameters = parameters
@@ -1691,6 +1697,7 @@ Builder.prototype.put = function(body, callback) {
 }
 
 Builder.prototype.patch = function(body, callback) {
+  log.debug('Patching ' + body)
   this.finalAction.walkAndExecute(body, this.request, this.request.patch,
       callback)
 }
@@ -1702,10 +1709,10 @@ Builder.prototype.del = function(callback) {
 
 module.exports = Builder
 
-},{"./final_action":7,"./json_hal_walker":8,"./json_walker":9,"./media_types":10,"minilog":1,"request":3,"util":2}],7:[function(require,module,exports){
+},{"./final_action":7,"./json_hal_walker":8,"./json_walker":9,"./media_types":10,"minilog":1,"request":3,"util":2}],7:[function(_dereq_,module,exports){
 'use strict';
 
-var minilog = require('minilog')
+var minilog = _dereq_('minilog')
 var log = minilog('traverson')
 
 function FinalAction(walker) {
@@ -1783,15 +1790,22 @@ FinalAction.prototype.walkAndExecute = function(body, request, method,
     if (err) { return callback(err, lastStep.response, lastStep.uri) }
     log.debug('executing final request with step: ' +
         JSON.stringify(nextStep))
+    log.debug('body => ' + body)
     self.executeRequest(nextStep.uri, request, method, body, callback)
   })
 }
 
 FinalAction.prototype.executeRequest = function(uri, request, method, body,
     callback) {
+  log.debug('body => ' + body)
+  log.debug('stringify(body) => ' + JSON.stringify(body))
   var options
   if (body) {
-    options = { body: JSON.stringify(body) }
+    if (typeof body === 'object') {
+      options = { body: JSON.stringify(body) }
+    } else if (typeof body === 'string') {
+      options = { body: body }
+    }
   } else {
     options = {}
   }
@@ -1805,13 +1819,13 @@ FinalAction.prototype.executeRequest = function(uri, request, method, body,
 
 module.exports = FinalAction
 
-},{"minilog":1}],8:[function(require,module,exports){
+},{"minilog":1}],8:[function(_dereq_,module,exports){
 'use strict';
 
-var halfred = require('halfred')
-var minilog = require('minilog')
-var _s = require('underscore.string')
-var Walker = require('./walker')
+var halfred = _dereq_('halfred')
+var minilog = _dereq_('minilog')
+var _s = _dereq_('underscore.string')
+var Walker = _dereq_('./walker')
 
 var log = minilog('traverson')
 
@@ -1901,7 +1915,7 @@ function findLinkBySecondaryKey(linkArray, key, secondaryKeyArray) {
           throw new Error(key + '[' + secondaryKey + ':' + secondaryValue +
               '] requested, but this link had no href attribute.')
         }
-        log.debug('found hal link: ' + linkArray[i].href)
+        log.debug('found hal link(1): ' + linkArray[i].href)
         return { uri: linkArray[i].href }
       }
       /* jshint +W116 */
@@ -1923,7 +1937,7 @@ function findLinkByIndex(linkArray, key, index) {
       throw new Error(key + '[' + index + '] requested, but this link had ' +
           ' no href attribute.')
     }
-    log.debug('found hal link: ' + linkArray[index].href)
+    log.debug('found hal link(2): ' + linkArray[index].href)
     return { uri: linkArray[index].href }
   }
   return null
@@ -1945,7 +1959,7 @@ function findLinkWithoutIndex(linkArray, key) {
           'key ' + key + ', arbitrarily choosing index ' + index +
           ', because it was the first that had a href attribute.')
     }
-    log.debug('found hal link: ' + link.href)
+    log.debug('found hal link(3): ' + link.href)
     return { uri: link.href }
   }
   return null
@@ -1993,20 +2007,22 @@ function findEmbeddedWithoutIndex(resourceArray, key) {
 
 JsonHalWalker.prototype.postProcessStep = function(nextStep) {
   if (nextStep.uri) {
-    if (_s.endsWith(this.startUri, '/') &&
-        _s.startsWith(nextStep.uri, '/')) {
-      nextStep.uri = _s.splice(nextStep.uri, 0, 1)
+    if (!_s.startsWith(nextStep.uri, 'http')) {
+      if (_s.endsWith(this.startUri, '/') &&
+          _s.startsWith(nextStep.uri, '/')) {
+        nextStep.uri = _s.splice(nextStep.uri, 0, 1)
+      }
+      nextStep.uri = this.startUri + nextStep.uri
     }
-    nextStep.uri = this.startUri + nextStep.uri
   }
 }
 
 module.exports = JsonHalWalker
 
-},{"./walker":11,"halfred":16,"minilog":1,"underscore.string":4}],9:[function(require,module,exports){
+},{"./walker":11,"halfred":17,"minilog":1,"underscore.string":4}],9:[function(_dereq_,module,exports){
 'use strict';
 
-var Walker = require('./walker')
+var Walker = _dereq_('./walker')
 
 function JsonWalker() { }
 
@@ -2014,7 +2030,7 @@ JsonWalker.prototype = new Walker()
 
 module.exports = JsonWalker
 
-},{"./walker":11}],10:[function(require,module,exports){
+},{"./walker":11}],10:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -2022,14 +2038,14 @@ module.exports = {
   JSON_HAL: 'application/hal+json'
 }
 
-},{}],11:[function(require,module,exports){
+},{}],11:[function(_dereq_,module,exports){
 'use strict';
 
-var jsonpathLib = require('JSONPath')
-var minilog = require('minilog')
-var _s = require('underscore.string')
-var uriTemplate = require('uri-template')
-var util = require('util')
+var jsonpathLib = _dereq_('JSONPath')
+var minilog = _dereq_('minilog')
+var _s = _dereq_('underscore.string')
+var uriTemplate = _dereq_('uri-template')
+var util = _dereq_('util')
 
 
 /* jshint -W061 */
@@ -2232,6 +2248,14 @@ Walker.prototype.resolveJSONPath = function(link, doc) {
 
 Walker.prototype.resolveUriTemplate = function(uri, templateParams,
     templateIndex) {
+
+  var self = this
+
+  if (self.ignoreOptions && _s.contains(uri, '{')) {
+    log.debug(uri + ' has options, and you asked to trim them out')
+    return uri.split('{')[0]
+  }
+
   if (util.isArray(templateParams)) {
     // if template params were given as an array, only use the array element
     // for the current index for URI template resolving.
@@ -2277,7 +2301,7 @@ function jsonError(uri, body) {
 
 module.exports = Walker
 
-},{"JSONPath":13,"minilog":1,"underscore.string":4,"uri-template":20,"util":2}],12:[function(require,module,exports){
+},{"JSONPath":13,"minilog":1,"underscore.string":4,"uri-template":21,"util":2}],12:[function(_dereq_,module,exports){
 /* jshint -W116 */
 var nativeIsArray = Array.isArray;
 
@@ -2288,15 +2312,15 @@ exports.isArray = nativeIsArray || function(obj) {
 };
 /* jshint +W116 */
 
-},{}],13:[function(require,module,exports){
+},{}],13:[function(_dereq_,module,exports){
 /* JSONPath 0.8.0 - XPath for JSON
  *
  * Copyright (c) 2007 Stefan Goessner (goessner.net)
  * Licensed under the MIT (MIT-LICENSE.txt) licence.
  */
 
-var vm = require('vm'),
-    _ = require('underscore');
+var vm = _dereq_('vm'),
+    _ = _dereq_('underscore');
 exports.eval = jsonPath;
 var cache = {};
 function jsonPath(obj, expr, arg) {
@@ -2423,7 +2447,11 @@ function jsonPath(obj, expr, arg) {
    }
 } 
 
-},{"underscore":12,"vm":14}],14:[function(require,module,exports){
+},{"underscore":12,"vm":15}],14:[function(_dereq_,module,exports){
+
+},{}],15:[function(_dereq_,module,exports){
+var indexOf = _dereq_('indexof');
+
 var Object_keys = function (obj) {
     if (Object.keys) return Object.keys(obj)
     else {
@@ -2440,13 +2468,42 @@ var forEach = function (xs, fn) {
     }
 };
 
+var defineProp = (function() {
+    try {
+        Object.defineProperty({}, '_', {});
+        return function(obj, name, value) {
+            Object.defineProperty(obj, name, {
+                writable: true,
+                enumerable: false,
+                configurable: true,
+                value: value
+            })
+        };
+    } catch(e) {
+        return function(obj, name, value) {
+            obj[name] = value;
+        };
+    }
+}());
+
+var globals = ['Array', 'Boolean', 'Date', 'Error', 'EvalError', 'Function',
+'Infinity', 'JSON', 'Math', 'NaN', 'Number', 'Object', 'RangeError',
+'ReferenceError', 'RegExp', 'String', 'SyntaxError', 'TypeError', 'URIError',
+'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape',
+'eval', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'undefined', 'unescape'];
+
+function Context() {}
+Context.prototype = {};
+
 var Script = exports.Script = function NodeScript (code) {
     if (!(this instanceof Script)) return new Script(code);
     this.code = code;
 };
 
-Script.prototype.runInNewContext = function (context) {
-    if (!context) context = {};
+Script.prototype.runInContext = function (context) {
+    if (!(context instanceof Context)) {
+        throw new TypeError("needs a 'context' argument.");
+    }
     
     var iframe = document.createElement('iframe');
     if (!iframe.style) iframe.style = {};
@@ -2455,20 +2512,40 @@ Script.prototype.runInNewContext = function (context) {
     document.body.appendChild(iframe);
     
     var win = iframe.contentWindow;
+    var wEval = win.eval, wExecScript = win.execScript;
+
+    if (!wEval && wExecScript) {
+        // win.eval() magically appears when this is called in IE:
+        wExecScript.call(win, 'null');
+        wEval = win.eval;
+    }
     
     forEach(Object_keys(context), function (key) {
         win[key] = context[key];
     });
-     
-    if (!win.eval && win.execScript) {
-        // win.eval() magically appears when this is called in IE:
-        win.execScript('null');
-    }
+    forEach(globals, function (key) {
+        if (context[key]) {
+            win[key] = context[key];
+        }
+    });
     
-    var res = win.eval(this.code);
+    var winKeys = Object_keys(win);
+
+    var res = wEval.call(win, this.code);
     
     forEach(Object_keys(win), function (key) {
-        context[key] = win[key];
+        // Avoid copying circular objects like `top` and `window` by only
+        // updating existing context properties or new properties in the `win`
+        // that was only introduced after the eval.
+        if (key in context || indexOf(winKeys, key) === -1) {
+            context[key] = win[key];
+        }
+    });
+
+    forEach(globals, function (key) {
+        if (!(key in context)) {
+            defineProp(context, key, win[key]);
+        }
     });
     
     document.body.removeChild(iframe);
@@ -2480,11 +2557,15 @@ Script.prototype.runInThisContext = function () {
     return eval(this.code); // maybe...
 };
 
-Script.prototype.runInContext = function (context) {
-    // seems to be just runInNewContext on magical context objects which are
-    // otherwise indistinguishable from objects except plain old objects
-    // for the parameter segfaults node
-    return this.runInNewContext(context);
+Script.prototype.runInNewContext = function (context) {
+    var ctx = Script.createContext(context);
+    var res = this.runInContext(ctx);
+
+    forEach(Object_keys(ctx), function (key) {
+        context[key] = ctx[key];
+    });
+
+    return res;
 };
 
 forEach(Object_keys(Script.prototype), function (name) {
@@ -2499,9 +2580,7 @@ exports.createScript = function (code) {
 };
 
 exports.createContext = Script.createContext = function (context) {
-    // not really sure what this one does
-    // seems to just make a shallow copy
-    var copy = {};
+    var copy = new Context();
     if(typeof context === 'object') {
         forEach(Object_keys(context), function (key) {
             copy[key] = context[key];
@@ -2510,10 +2589,19 @@ exports.createContext = Script.createContext = function (context) {
     return copy;
 };
 
-},{}],15:[function(require,module,exports){
+},{"indexof":16}],16:[function(_dereq_,module,exports){
 
-},{}],16:[function(require,module,exports){
-var Parser = require('./lib/parser')
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+},{}],17:[function(_dereq_,module,exports){
+var Parser = _dereq_('./lib/parser')
 
 var validationFlag = false
 
@@ -2532,7 +2620,7 @@ module.exports = {
   }
 }
 
-},{"./lib/parser":18}],17:[function(require,module,exports){
+},{"./lib/parser":19}],18:[function(_dereq_,module,exports){
 'use strict';
 
 /*
@@ -2577,11 +2665,11 @@ ImmutableStack.prototype.peek = function() {
 
 module.exports = ImmutableStack
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 'use strict';
 
-var Resource = require('./resource')
-var Stack = require('./immutable_stack')
+var Resource = _dereq_('./resource')
+var Stack = _dereq_('./immutable_stack')
 
 var linkSpec = {
   href: { required: true, defaultValue: null },
@@ -2768,7 +2856,7 @@ function pathToString(path) {
 
 module.exports = Parser
 
-},{"./immutable_stack":17,"./resource":19}],19:[function(require,module,exports){
+},{"./immutable_stack":18,"./resource":20}],20:[function(_dereq_,module,exports){
 'use strict';
 
 function Resource(links, embedded, validationIssues) {
@@ -2836,7 +2924,7 @@ Resource.prototype.validation = Resource.prototype.validationIssues
 
 module.exports = Resource
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(_dereq_,module,exports){
 module.exports = (function(){
   /*
    * Generated by PEG.js 0.7.0.
@@ -3473,7 +3561,7 @@ module.exports = (function(){
       }
       
       
-          var cls = require('./lib/classes')
+          var cls = _dereq_('./lib/classes')
           var Template = cls.Template
           var expression = cls.expression
       
@@ -3563,7 +3651,7 @@ module.exports = (function(){
   return result;
 })();
 
-},{"./lib/classes":21}],21:[function(require,module,exports){
+},{"./lib/classes":22}],22:[function(_dereq_,module,exports){
 // Generated by CoffeeScript 1.6.2
 (function() {
   var FormContinuationExpression, FormStartExpression, FragmentExpression, LabelExpression, NamedExpression, PathParamExpression, PathSegmentExpression, ReservedExpression, SimpleExpression, Template, encoders, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
@@ -3571,7 +3659,7 @@ module.exports = (function(){
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  encoders = require('./encoders');
+  encoders = _dereq_('./encoders');
 
   Template = Template = (function() {
     function Template(pieces) {
@@ -3993,12 +4081,12 @@ module.exports = (function(){
 
 }).call(this);
 
-},{"./encoders":22}],22:[function(require,module,exports){
+},{"./encoders":23}],23:[function(_dereq_,module,exports){
 // Generated by CoffeeScript 1.6.2
 (function() {
   var pctEncode;
 
-  pctEncode = require('pct-encode');
+  pctEncode = _dereq_('pct-encode');
 
   exports["U"] = pctEncode(/[^\w~.-]/g);
 
@@ -4006,7 +4094,7 @@ module.exports = (function(){
 
 }).call(this);
 
-},{"pct-encode":23}],23:[function(require,module,exports){
+},{"pct-encode":24}],24:[function(_dereq_,module,exports){
 module.exports = function pctEncode(regexp) {
   regexp = regexp || /\W/g;
   return function encode(string) {
@@ -4031,12 +4119,12 @@ module.exports = function pctEncode(regexp) {
   }
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(_dereq_,module,exports){
 'use strict';
 
-var minilog = require('minilog')
-var mediaTypes = require('./lib/media_types')
-var Builder = require('./lib/builder')
+var minilog = _dereq_('minilog')
+var mediaTypes = _dereq_('./lib/media_types')
+var Builder = _dereq_('./lib/builder')
 
 // activate this line to enable logging
 // require('minilog').enable();
@@ -4062,7 +4150,6 @@ module.exports = {
   }
 }
 
-},{"./lib/builder":6,"./lib/media_types":10,"minilog":1}]},{},[24])
-(24)
+},{"./lib/builder":6,"./lib/media_types":10,"minilog":1}]},{},[25])
+(25)
 });
-;

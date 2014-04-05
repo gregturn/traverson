@@ -3,7 +3,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 // TODO Replace by a proper lightweight logging module, suited for the browser
 
-var enabled = false
+var enabled = true
 function Logger(id) {
   if (id == null) {
     id = ''
@@ -1583,7 +1583,7 @@ if (typeof exports == "object") {
   this["superagent"] = require("superagent");
 }})();
 
-},{"emitter":15,"indexof":15,"reduce":15,"superagent":15}],6:[function(require,module,exports){
+},{"emitter":14,"indexof":14,"reduce":14,"superagent":14}],6:[function(require,module,exports){
 'use strict';
 
 var minilog = require('minilog')
@@ -1601,6 +1601,7 @@ function Builder(mediaType, startUri) {
   this.walker = this.createWalker(mediaType)
   this.walker.startUri = startUri
   this.walker.request = this.request = standardRequest
+  this.walker.ignoreOptions = false
   this.finalAction = new FinalAction(this.walker)
 }
 
@@ -1627,6 +1628,11 @@ Builder.prototype.follow = function() {
 }
 
 Builder.prototype.walk = Builder.prototype.follow
+
+Builder.prototype.ignoreOptions = function() {
+  this.walker.ignoreOptions = true
+  return this
+}
 
 Builder.prototype.withTemplateParameters = function(parameters) {
   this.walker.templateParameters = parameters
@@ -1901,7 +1907,7 @@ function findLinkBySecondaryKey(linkArray, key, secondaryKeyArray) {
           throw new Error(key + '[' + secondaryKey + ':' + secondaryValue +
               '] requested, but this link had no href attribute.')
         }
-        log.debug('found hal link: ' + linkArray[i].href)
+        log.debug('found hal link(1): ' + linkArray[i].href)
         return { uri: linkArray[i].href }
       }
       /* jshint +W116 */
@@ -1923,7 +1929,7 @@ function findLinkByIndex(linkArray, key, index) {
       throw new Error(key + '[' + index + '] requested, but this link had ' +
           ' no href attribute.')
     }
-    log.debug('found hal link: ' + linkArray[index].href)
+    log.debug('found hal link(2): ' + linkArray[index].href)
     return { uri: linkArray[index].href }
   }
   return null
@@ -1945,7 +1951,7 @@ function findLinkWithoutIndex(linkArray, key) {
           'key ' + key + ', arbitrarily choosing index ' + index +
           ', because it was the first that had a href attribute.')
     }
-    log.debug('found hal link: ' + link.href)
+    log.debug('found hal link(3): ' + link.href)
     return { uri: link.href }
   }
   return null
@@ -1993,17 +1999,19 @@ function findEmbeddedWithoutIndex(resourceArray, key) {
 
 JsonHalWalker.prototype.postProcessStep = function(nextStep) {
   if (nextStep.uri) {
-    if (_s.endsWith(this.startUri, '/') &&
-        _s.startsWith(nextStep.uri, '/')) {
-      nextStep.uri = _s.splice(nextStep.uri, 0, 1)
+    if (!_s.startsWith(nextStep.uri, 'http')) {
+      if (_s.endsWith(this.startUri, '/') &&
+          _s.startsWith(nextStep.uri, '/')) {
+        nextStep.uri = _s.splice(nextStep.uri, 0, 1)
+      }
+      nextStep.uri = this.startUri + nextStep.uri
     }
-    nextStep.uri = this.startUri + nextStep.uri
   }
 }
 
 module.exports = JsonHalWalker
 
-},{"./walker":11,"halfred":16,"minilog":1,"underscore.string":4}],9:[function(require,module,exports){
+},{"./walker":11,"halfred":17,"minilog":1,"underscore.string":4}],9:[function(require,module,exports){
 'use strict';
 
 var Walker = require('./walker')
@@ -2232,6 +2240,14 @@ Walker.prototype.resolveJSONPath = function(link, doc) {
 
 Walker.prototype.resolveUriTemplate = function(uri, templateParams,
     templateIndex) {
+
+  var self = this
+
+  if (self.ignoreOptions && _s.contains(uri, '{')) {
+    log.debug(uri + ' has options, and you asked to trim them out')
+    return uri.split('{')[0]
+  }
+
   if (util.isArray(templateParams)) {
     // if template params were given as an array, only use the array element
     // for the current index for URI template resolving.
@@ -2277,7 +2293,7 @@ function jsonError(uri, body) {
 
 module.exports = Walker
 
-},{"JSONPath":13,"minilog":1,"underscore.string":4,"uri-template":20,"util":2}],12:[function(require,module,exports){
+},{"JSONPath":13,"minilog":1,"underscore.string":4,"uri-template":21,"util":2}],12:[function(require,module,exports){
 /* jshint -W116 */
 var nativeIsArray = Array.isArray;
 
@@ -2423,7 +2439,11 @@ function jsonPath(obj, expr, arg) {
    }
 } 
 
-},{"underscore":12,"vm":14}],14:[function(require,module,exports){
+},{"underscore":12,"vm":15}],14:[function(require,module,exports){
+
+},{}],15:[function(require,module,exports){
+var indexOf = require('indexof');
+
 var Object_keys = function (obj) {
     if (Object.keys) return Object.keys(obj)
     else {
@@ -2440,13 +2460,42 @@ var forEach = function (xs, fn) {
     }
 };
 
+var defineProp = (function() {
+    try {
+        Object.defineProperty({}, '_', {});
+        return function(obj, name, value) {
+            Object.defineProperty(obj, name, {
+                writable: true,
+                enumerable: false,
+                configurable: true,
+                value: value
+            })
+        };
+    } catch(e) {
+        return function(obj, name, value) {
+            obj[name] = value;
+        };
+    }
+}());
+
+var globals = ['Array', 'Boolean', 'Date', 'Error', 'EvalError', 'Function',
+'Infinity', 'JSON', 'Math', 'NaN', 'Number', 'Object', 'RangeError',
+'ReferenceError', 'RegExp', 'String', 'SyntaxError', 'TypeError', 'URIError',
+'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape',
+'eval', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'undefined', 'unescape'];
+
+function Context() {}
+Context.prototype = {};
+
 var Script = exports.Script = function NodeScript (code) {
     if (!(this instanceof Script)) return new Script(code);
     this.code = code;
 };
 
-Script.prototype.runInNewContext = function (context) {
-    if (!context) context = {};
+Script.prototype.runInContext = function (context) {
+    if (!(context instanceof Context)) {
+        throw new TypeError("needs a 'context' argument.");
+    }
     
     var iframe = document.createElement('iframe');
     if (!iframe.style) iframe.style = {};
@@ -2455,20 +2504,40 @@ Script.prototype.runInNewContext = function (context) {
     document.body.appendChild(iframe);
     
     var win = iframe.contentWindow;
+    var wEval = win.eval, wExecScript = win.execScript;
+
+    if (!wEval && wExecScript) {
+        // win.eval() magically appears when this is called in IE:
+        wExecScript.call(win, 'null');
+        wEval = win.eval;
+    }
     
     forEach(Object_keys(context), function (key) {
         win[key] = context[key];
     });
-     
-    if (!win.eval && win.execScript) {
-        // win.eval() magically appears when this is called in IE:
-        win.execScript('null');
-    }
+    forEach(globals, function (key) {
+        if (context[key]) {
+            win[key] = context[key];
+        }
+    });
     
-    var res = win.eval(this.code);
+    var winKeys = Object_keys(win);
+
+    var res = wEval.call(win, this.code);
     
     forEach(Object_keys(win), function (key) {
-        context[key] = win[key];
+        // Avoid copying circular objects like `top` and `window` by only
+        // updating existing context properties or new properties in the `win`
+        // that was only introduced after the eval.
+        if (key in context || indexOf(winKeys, key) === -1) {
+            context[key] = win[key];
+        }
+    });
+
+    forEach(globals, function (key) {
+        if (!(key in context)) {
+            defineProp(context, key, win[key]);
+        }
     });
     
     document.body.removeChild(iframe);
@@ -2480,11 +2549,15 @@ Script.prototype.runInThisContext = function () {
     return eval(this.code); // maybe...
 };
 
-Script.prototype.runInContext = function (context) {
-    // seems to be just runInNewContext on magical context objects which are
-    // otherwise indistinguishable from objects except plain old objects
-    // for the parameter segfaults node
-    return this.runInNewContext(context);
+Script.prototype.runInNewContext = function (context) {
+    var ctx = Script.createContext(context);
+    var res = this.runInContext(ctx);
+
+    forEach(Object_keys(ctx), function (key) {
+        context[key] = ctx[key];
+    });
+
+    return res;
 };
 
 forEach(Object_keys(Script.prototype), function (name) {
@@ -2499,9 +2572,7 @@ exports.createScript = function (code) {
 };
 
 exports.createContext = Script.createContext = function (context) {
-    // not really sure what this one does
-    // seems to just make a shallow copy
-    var copy = {};
+    var copy = new Context();
     if(typeof context === 'object') {
         forEach(Object_keys(context), function (key) {
             copy[key] = context[key];
@@ -2510,9 +2581,18 @@ exports.createContext = Script.createContext = function (context) {
     return copy;
 };
 
-},{}],15:[function(require,module,exports){
+},{"indexof":16}],16:[function(require,module,exports){
 
-},{}],16:[function(require,module,exports){
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+},{}],17:[function(require,module,exports){
 var Parser = require('./lib/parser')
 
 var validationFlag = false
@@ -2532,7 +2612,7 @@ module.exports = {
   }
 }
 
-},{"./lib/parser":18}],17:[function(require,module,exports){
+},{"./lib/parser":19}],18:[function(require,module,exports){
 'use strict';
 
 /*
@@ -2577,7 +2657,7 @@ ImmutableStack.prototype.peek = function() {
 
 module.exports = ImmutableStack
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 var Resource = require('./resource')
@@ -2768,7 +2848,7 @@ function pathToString(path) {
 
 module.exports = Parser
 
-},{"./immutable_stack":17,"./resource":19}],19:[function(require,module,exports){
+},{"./immutable_stack":18,"./resource":20}],20:[function(require,module,exports){
 'use strict';
 
 function Resource(links, embedded, validationIssues) {
@@ -2836,7 +2916,7 @@ Resource.prototype.validation = Resource.prototype.validationIssues
 
 module.exports = Resource
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = (function(){
   /*
    * Generated by PEG.js 0.7.0.
@@ -3563,7 +3643,7 @@ module.exports = (function(){
   return result;
 })();
 
-},{"./lib/classes":21}],21:[function(require,module,exports){
+},{"./lib/classes":22}],22:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.2
 (function() {
   var FormContinuationExpression, FormStartExpression, FragmentExpression, LabelExpression, NamedExpression, PathParamExpression, PathSegmentExpression, ReservedExpression, SimpleExpression, Template, encoders, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
@@ -3993,7 +4073,7 @@ module.exports = (function(){
 
 }).call(this);
 
-},{"./encoders":22}],22:[function(require,module,exports){
+},{"./encoders":23}],23:[function(require,module,exports){
 // Generated by CoffeeScript 1.6.2
 (function() {
   var pctEncode;
@@ -4006,7 +4086,7 @@ module.exports = (function(){
 
 }).call(this);
 
-},{"pct-encode":23}],23:[function(require,module,exports){
+},{"pct-encode":24}],24:[function(require,module,exports){
 module.exports = function pctEncode(regexp) {
   regexp = regexp || /\W/g;
   return function encode(string) {
@@ -4031,9 +4111,9 @@ module.exports = function pctEncode(regexp) {
   }
 }
 
-},{}],"/home/bastian/projekte/traverson/traverson.js":[function(require,module,exports){
-module.exports=require('5u5bvt');
-},{}],"5u5bvt":[function(require,module,exports){
+},{}],"/Users/gturnquist/src/traverson/traverson.js":[function(require,module,exports){
+module.exports=require('BIsrf7');
+},{}],"BIsrf7":[function(require,module,exports){
 'use strict';
 
 var minilog = require('minilog')
@@ -4064,5 +4144,4 @@ module.exports = {
   }
 }
 
-},{"./lib/builder":6,"./lib/media_types":10,"minilog":1}]},{},["5u5bvt"])
-;
+},{"./lib/builder":6,"./lib/media_types":10,"minilog":1}]},{},["BIsrf7"])
